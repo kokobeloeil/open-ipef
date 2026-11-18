@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load ipef %}
+{% block title %}{{ question.titre }}{% endblock %}
+{% block description %}{{ question.contenu|truncatechars:160 }}{% endblock %}
+
+{% block content %}
+<div class="container layout-detail">
+  <div>
+    <nav class="breadcrumb" aria-label="Fil d'Ariane">
+      <a href="{% url 'faq:liste' %}">Questions</a>
+      {% if question.theme %}<span>›</span><a href="{% url 'faq:liste' %}?theme={{ question.theme.slug }}">{{ question.theme.nom }}</a>{% endif %}
+    </nav>
+
+    {% if question.masquee %}<div class="notice notice-danger">🙈 <div>Cette question est masquée : seuls les modérateurs la voient.</div></div>{% endif %}
+
+    <article class="question-main">
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">
+        {% if question.epinglee %}<span class="badge badge-copper">★ Question fréquente</span>{% endif %}
+        {% if question.resolue %}<span class="badge badge-ok">✓ Résolue</span>{% else %}<span class="badge badge-muted">En attente de réponse</span>{% endif %}
+      </div>
+      <h1>{{ question.titre }}</h1>
+      {% if question.contenu %}<div class="prose">{{ question.contenu|markdown }}</div>{% endif %}
+      <div class="meta-row">
+        <span class="who"><span class="avatar">{{ question.auteur.initiales|default:"?" }}</span>{{ question.auteur.nom_affiche|default:"Anonyme" }}</span>
+        <span>il y a {{ question.cree_le|timesince }}</span>
+      </div>
+
+      <div class="question-actions">
+        {% if user.is_authenticated %}
+          <form method="post" action="{% url 'faq:soutenir' question.pk %}">{% csrf_token %}
+            <button class="btn btn-ghost btn-sm support-btn{% if deja_soutenu %} on{% endif %}" type="submit" title="Je me pose aussi cette question">✋ Moi aussi · {{ nb_soutiens }}</button>
+          </form>
+        {% else %}
+          <span class="pill">✋ {{ nb_soutiens }} personne{{ nb_soutiens|pluralize }} se pose{{ nb_soutiens|pluralize:"nt" }} cette question</span>
+        {% endif %}
+        {% if user.is_authenticated %}
+          {% if user == question.auteur or user.est_equipe %}
+            <form method="post" action="{% url 'faq:action' question.pk %}">{% csrf_token %}<input type="hidden" name="action" value="resoudre">
+              <button class="btn btn-ghost btn-sm" type="submit">{% if question.resolue %}Rouvrir{% else %}Marquer comme résolue{% endif %}</button></form>
+          {% endif %}
+          {% if user.est_moderateur %}
+            <form method="post" action="{% url 'faq:action' question.pk %}">{% csrf_token %}<input type="hidden" name="action" value="epingler">
+              <button class="btn btn-ghost btn-sm" type="submit">{% if question.epinglee %}Retirer des fréquentes{% else %}★ Épingler en question fréquente{% endif %}</button></form>
+            <form method="post" action="{% url 'faq:action' question.pk %}" data-confirm="Masquer cette question ?">{% csrf_token %}<input type="hidden" name="action" value="masquer">
+              <button class="btn btn-ghost btn-sm" type="submit">{% if question.masquee %}Rendre visible{% else %}Masquer{% endif %}</button></form>
+          {% endif %}
+        {% endif %}
+      </div>
+    </article>
+
+    <div class="answers-head">
+      <h2 style="margin:0">{{ reponses|length }} réponse{{ reponses|length|pluralize }}</h2>
+    </div>
+
+    {% for rep in reponses %}
+      <article class="answer{% if rep.de_l_equipe %} team{% endif %}{% if rep.acceptee %} accepted{% endif %}" id="reponse-{{ rep.pk }}">
+        <div class="answer-head">
+          <span class="avatar{% if rep.de_l_equipe %} avatar-copper{% endif %}">{{ rep.auteur.initiales|default:"?" }}</span>
+          <span class="name">{{ rep.auteur.nom_affiche|default:"Compte supprimé" }}</span>
+          {% if rep.de_l_equipe %}<span class="badge badge-equipe">Équipe{% if rep.auteur.promotion %} · {{ rep.auteur.promotion }}{% endif %}</span>{% endif %}
+          {% if rep.acceptee %}<span class="badge badge-ok">✓ Meilleure réponse</span>{% endif %}
+          <time datetime="{{ rep.cree_le|date:'c' }}">il y a {{ rep.cree_le|timesince }}</time>
+        </div>
+        <div class="prose">{{ rep.contenu|markdown }}</div>
+        {% if user.is_authenticated %}
+          <div class="answer-foot">
+            {% if peut_accepter %}
+              <form method="post" action="{% url 'faq:accepter' rep.pk %}">{% csrf_token %}<button class="btn-link" type="submit">{% if rep.acceptee %}Retirer « meilleure réponse »{% else %}✓ Marquer comme meilleure réponse{% endif %}</button></form>
+            {% endif %}
+            {% if user == rep.auteur or user.est_moderateur %}
+              <form method="post" action="{% url 'faq:supprimer_reponse' rep.pk %}" data-confirm="Supprimer cette réponse ?">{% csrf_token %}<button class="btn-link" style="color:var(--danger)" type="submit">Supprimer</button></form>
+            {% endif %}
+          </div>
+        {% endif %}
+      </article>
+    {% empty %}
+      <div class="empty" style="padding:2rem"><div class="ico">🌱</div><h3>Pas encore de réponse</h3><p>La promotion a été prévenue. Si vous connaissez la réponse, partagez-la !</p></div>
+    {% endfor %}
+
+    <div class="form-card" style="margin-top:1.5rem">
+      {% if user.is_authenticated %}
+        <h3>Répondre{% if user.est_equipe %} <span class="badge badge-equipe">en tant qu'Équipe</span>{% endif %}</h3>
+        <form method="post">
+          {% csrf_token %}
+          {% with field=form.contenu %}{% include "includes/field.html" %}{% endwith %}
+          <div class="form-actions"><button class="btn btn-accent" type="submit">Publier ma réponse</button></div>
+        </form>
+      {% else %}
+        <h3>Vous voulez répondre ?</h3>
+        <p class="muted">Connectez-vous ou créez un compte gratuitement pour participer.</p>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+          <a class="btn" href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">Se connecter</a>
+          <a class="btn btn-ghost" href="{% url 'accounts:inscription' %}">Créer un compte</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <aside class="aside-sticky" style="padding-top:2.4rem">
+    {% if similaires %}
+      <div class="card">
+        <h3>Sur le même thème</h3>
+        <ul class="mini-list">
+          {% for s in similaires %}<li><a href="{{ s.get_absolute_url }}">{{ s.titre }}</a></li>{% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    <div class="card" style="background:var(--forest-800);color:var(--paper);border:0">
+      <h3 style="color:var(--paper)">Une autre question ?</h3>
+      <p class="small" style="color:rgba(247,244,236,.75)">Chaque question publique aide aussi les prochains candidats.</p>
+      <a class="btn btn-accent btn-block btn-sm" href="{% url 'faq:poser' %}">Poser une question</a>
+    </div>
+  </aside>
+</div>
+{% endblock %}

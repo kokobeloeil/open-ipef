@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Mon profil{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <div class="container" style="display:flex;align-items:center;gap:1.2rem">
+    <span class="avatar avatar-lg">{{ user.initiales }}</span>
+    <div>
+      <h1 style="margin:0">{{ user.nom_affiche }}</h1>
+      <p><span class="badge {{ user.classe_badge }}">{{ user.get_role_display }}</span> {% if user.promotion %}· {{ user.promotion }}{% endif %} · membre depuis {{ user.date_joined|date:"F Y" }}</p>
+    </div>
+  </div>
+</header>
+
+<section class="section-tight">
+  <div class="container split">
+    <form class="form-card" method="post" novalidate>
+      {% csrf_token %}
+      <h2 style="font-size:1.4rem">Mes informations</h2>
+      {% include "includes/form_errors.html" %}
+      <div class="form-grid">
+        {% with field=form.first_name %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.last_name %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.email full=True %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.promotion full=True %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.bio full=True %}{% include "includes/field.html" %}{% endwith %}
+      </div>
+      <div class="form-actions">
+        <a class="btn btn-ghost" href="{% url 'accounts:password_change' %}">Changer de mot de passe</a>
+        <button class="btn btn-accent" type="submit">Enregistrer</button>
+      </div>
+    </form>
+    <div style="display:grid;gap:1.2rem">
+      <div class="card">
+        <h3>Mon activité</h3>
+        <div class="stat-row">
+          <div class="stat"><strong>{{ stats.ressources }}</strong><span>ressources</span></div>
+          <div class="stat"><strong>{{ stats.questions }}</strong><span>questions</span></div>
+          <div class="stat"><strong>{{ stats.reponses }}</strong><span>réponses</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Mes droits</h3>
+        <ul class="mini-list">
+          <li><a href="{% url 'ressources:liste' %}">Consulter les ressources<small>✓ Toujours</small></a></li>
+          <li><a href="{% url 'faq:poser' %}">Poser et répondre aux questions<small>✓ Toujours</small></a></li>
+          {% if user.est_admissible %}<li><a href="{% url 'ressources:liste' %}">Ressources réservées aux admissibles<small>✓ Admissible</small></a></li>{% endif %}
+          {% if user.est_equipe %}<li><a href="{% url 'ressources:mes_ressources' %}">Déposer des ressources et voir les documents internes<small>✓ Membre de la promo</small></a></li>{% endif %}
+          {% if user.est_moderateur %}<li><a href="{% url 'ressources:moderation' %}">Valider les ressources<small>✓ Modérateur·rice</small></a></li>{% endif %}
+          {% if user.est_admin %}<li><a href="{% url 'accounts:equipe' %}">Gérer les rôles<small>✓ Administrateur·rice</small></a></li>{% endif %}
+        </ul>
+        {% if not user.est_admissible %}<p class="small muted" style="margin:1rem 0 0">Vous êtes admissible ? Signalez-le à l'équipe pour accéder aux ressources de préparation aux oraux.</p>{% endif %}
+        {% if not user.est_equipe %}<p class="small muted" style="margin:.5rem 0 0">Vous faites partie de la promo ? Demandez à un·e administrateur·rice de vous passer contributeur·rice.</p>{% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

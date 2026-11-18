@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Connexion{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="form-card auth-card">
+    <h1>Bon retour !</h1>
+    <p class="sub">Connectez-vous pour accéder à toutes les ressources.</p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.errors %}<div class="form-errors">Identifiant ou mot de passe incorrect.</div>{% endif %}
+      {% for field in form %}{% include "includes/field.html" %}{% endfor %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <button class="btn btn-accent btn-block btn-lg" type="submit">Se connecter</button>
+    </form>
+    <p class="auth-alt">Pas encore de compte ? <a href="{% url 'accounts:inscription' %}">Inscrivez-vous</a></p>
+  </div>
+</div>
+{% endblock %}

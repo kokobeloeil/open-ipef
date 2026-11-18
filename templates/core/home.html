@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Accueil{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <span class="eyebrow">Concours IPEF · entraide entre promotions</span>
+      <h1>Préparer le concours, avec ceux qui <em>viennent de le réussir</em>.</h1>
+      <p class="lead">Cours, fiches de synthèse, annales commentées et conseils pour les oraux : la promotion IPEF partage ici tout ce qui l'a aidée, et répond à vos questions.</p>
+      <div class="hero-actions">
+        <a class="btn btn-accent btn-lg" href="{% url 'ressources:liste' %}">Parcourir les ressources</a>
+        <a class="btn btn-outline-light btn-lg" href="{% url 'faq:liste' %}">Lire la FAQ</a>
+      </div>
+      <form class="hero-search" action="{% url 'ressources:liste' %}" method="get" role="search">
+        {% include "includes/icon_search.html" %}
+        <label class="visually-hidden" for="hero-q">Rechercher</label>
+        <input id="hero-q" type="search" name="q" placeholder="Rechercher un cours, une annale, une notion…">
+        <button class="btn btn-light btn-sm" type="submit">Chercher</button>
+      </form>
+    </div>
+    <aside class="hero-card">
+      <h3>Le site en chiffres</h3>
+      <div class="hero-stats">
+        <div class="hero-stat"><strong>{{ stats.ressources }}</strong><span>ressources</span></div>
+        <div class="hero-stat"><strong>{{ stats.questions }}</strong><span>questions</span></div>
+        <div class="hero-stat"><strong>{{ stats.equipe }}</strong><span>contributeurs</span></div>
+      </div>
+      <ol class="hero-steps">
+        <li><b>1</b><span>Choisissez une matière et téléchargez cours et annales.</span></li>
+        <li><b>2</b><span>Créez un compte pour accéder aux contenus réservés.</span></li>
+        <li><b>3</b><span>Posez vos questions : la promo vous répond.</span></li>
+      </ol>
+    </aside>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Par matière</span>
+        <h2>Trouvez votre point de départ</h2>
+      </div>
+      <a class="btn btn-ghost" href="{% url 'ressources:liste' %}">Tout voir →</a>
+    </div>
+    {% if matieres %}
+      <div class="grid grid-4">
+        {% for m in matieres %}
+          <a class="m-card reveal" href="{{ m.get_absolute_url }}" style="--c: {{ m.couleur }}">
+            <span class="m-icon">{{ m.icone|default:"📘" }}</span>
+            <strong>{{ m.nom }}</strong>
+            <span>{{ m.nb }} ressource{{ m.nb|pluralize }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty"><div class="ico">🌱</div><h3>Aucune matière pour l'instant</h3><p>Lancez <code>python manage.py initialiser_site</code> ou créez-les depuis l'administration.</p></div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Nouveautés</span>
+        <h2>Dernières ressources partagées</h2>
+      </div>
+      <a class="btn btn-ghost" href="{% url 'ressources:liste' %}">Toutes les ressources →</a>
+    </div>
+    {% if dernieres %}
+      <div class="grid grid-3">
+        {% for r in dernieres %}{% include "includes/ressource_card.html" %}{% endfor %}
+      </div>
+    {% else %}
+      <div class="empty"><div class="ico">📚</div><h3>Les premières ressources arrivent bientôt</h3><p>La promotion prépare ses cours et fiches. Revenez très vite !</p></div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="container split">
+    <div>
+      <span class="eyebrow">Foire aux questions</span>
+      <h2>Vos questions, nos réponses</h2>
+      <p class="muted">Inscription, déroulé des épreuves, organisation des révisions, vie à l'école… Les réponses de la promo sont signalées par un badge « Équipe ».</p>
+      <div class="q-list" style="margin-top:1.5rem">
+        {% for q in questions %}
+          <article class="q-item{% if q.epinglee %} pinned{% endif %}">
+            <div class="q-score{% if q.nb_reponses %} answered{% endif %}"><strong>{{ q.nb_reponses }}</strong><span>rép.</span></div>
+            <div>
+              <h3><a href="{{ q.get_absolute_url }}">{{ q.titre }}</a></h3>
+              <div class="q-meta">
+                {% if q.epinglee %}<span class="badge badge-copper">★ Fréquente</span>{% endif %}
+                {% if q.theme %}<span>{{ q.theme.nom }}</span>{% endif %}
+                <span>{{ q.cree_le|timesince }}</span>
+              </div>
+            </div>
+          </article>
+        {% empty %}
+          <div class="empty"><div class="ico">💬</div><h3>Pas encore de question</h3><p>Soyez la première personne à en poser une !</p></div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card" style="padding:2rem">
+      <h3>Une question sur le concours ?</h3>
+      <p class="muted">Posez-la publiquement : elle profitera à tous les candidats, et les membres de la promotion y répondront à partir de leur expérience.</p>
+      <form action="{% url 'faq:poser' %}" method="get">
+        <div class="field">
+          <label for="q-titre">Votre question</label>
+          <input id="q-titre" type="text" name="titre" placeholder="Ex. Quels livres pour l'épreuve de synthèse ?">
+        </div>
+        <button class="btn btn-accent btn-block" type="submit">Continuer</button>
+      </form>
+      <p class="small muted" style="margin:1rem 0 0">Pensez à chercher dans la <a href="{% url 'faq:liste' %}">FAQ</a> : la réponse y est peut-être déjà.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="cta-band">
+      <div>
+        <h2>Vous êtes de la promo ?</h2>
+        <p>Créez votre compte avec le code promotion pour déposer vos cours et fiches, et répondre aux candidats avec le badge Équipe.</p>
+      </div>
+      <a class="btn btn-accent btn-lg" href="{% if user.is_authenticated %}{% url 'ressources:creer' %}{% else %}{% url 'accounts:inscription' %}{% endif %}">Contribuer</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

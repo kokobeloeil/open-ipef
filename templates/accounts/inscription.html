@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Créer un compte{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="form-card auth-card" style="width:min(620px,100% - 2.5rem)">
+    <h1>Créer un compte</h1>
+    <p class="sub">Gratuit, pour accéder aux ressources réservées et poser vos questions.</p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "includes/form_errors.html" %}
+      <div class="form-grid">
+        {% with field=form.first_name %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.last_name %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.username %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.email %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.password1 %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.password2 %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.promotion %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.code_equipe %}{% include "includes/field.html" %}{% endwith %}
+      </div>
+      <button class="btn btn-accent btn-block btn-lg" type="submit">Créer mon compte</button>
+    </form>
+    <p class="auth-alt">Déjà inscrit·e ? <a href="{% url 'accounts:login' %}">Connectez-vous</a></p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Foire aux questions{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <div class="container page-head-row">
+    <div>
+      <span class="eyebrow">Foire aux questions</span>
+      <h1>Questions des candidats</h1>
+      <p>Cherchez parmi les questions déjà posées, ou posez la vôtre : la promotion IPEF et la communauté y répondent.</p>
+    </div>
+    <a class="btn btn-accent" href="{% url 'faq:poser' %}">Poser une question</a>
+  </div>
+</header>
+
+<div class="container layout-sidebar">
+  <aside class="sidebar">
+    <div>
+      <h4>Thèmes</h4>
+      <ul class="filter-list">
+        <li><a href="{% querystring theme=None page=None %}" class="{% if not theme_actif %}active{% endif %}"><span>Tous les thèmes</span></a></li>
+        {% for t in themes %}
+          <li><a href="{% querystring theme=t.slug page=None %}" class="{% if theme_actif == t %}active{% endif %}"><span>{{ t.nom }}</span></a></li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="card" style="background:var(--paper-2);border:0">
+      <h3 style="font-size:1rem">Bien poser sa question</h3>
+      <p class="small muted" style="margin:0">Un titre précis, un peu de contexte, et vérifiez qu'elle n'a pas déjà été posée. Les réponses de la promo portent le badge <span class="badge badge-equipe">Équipe</span>.</p>
+    </div>
+  </aside>
+
+  <div>
+    <form class="search-box" method="get" role="search" style="max-width:none;margin-bottom:1.2rem">
+      {% include "includes/icon_search.html" %}
+      {% if theme_actif %}<input type="hidden" name="theme" value="{{ theme_actif.slug }}">{% endif %}
+      {% if filtre %}<input type="hidden" name="filtre" value="{{ filtre }}">{% endif %}
+      <label class="visually-hidden" for="fq">Rechercher</label>
+      <input id="fq" type="search" name="q" value="{{ q }}" placeholder="Rechercher une question ou une réponse…">
+      <button class="btn btn-sm" type="submit">OK</button>
+    </form>
+
+    <nav class="tabs">
+      <a href="{% querystring filtre=None page=None %}" class="{% if not filtre %}active{% endif %}">Récentes</a>
+      <a href="{% querystring filtre='frequentes' page=None %}" class="{% if filtre == 'frequentes' %}active{% endif %}">★ Fréquentes</a>
+      <a href="{% querystring filtre='populaires' page=None %}" class="{% if filtre == 'populaires' %}active{% endif %}">Populaires</a>
+      <a href="{% querystring filtre='sans_reponse' page=None %}" class="{% if filtre == 'sans_reponse' %}active{% endif %}">Sans réponse</a>
+      <a href="{% querystring filtre='resolues' page=None %}" class="{% if filtre == 'resolues' %}active{% endif %}">Résolues</a>
+    </nav>
+
+    {% if page.object_list %}
+      <div class="q-list">
+        {% for q in page.object_list %}
+          <article class="q-item reveal{% if q.epinglee %} pinned{% endif %}">
+            <div class="q-score{% if q.nb_reponses %} answered{% endif %}">
+              <strong>{{ q.nb_reponses }}</strong><span>réponse{{ q.nb_reponses|pluralize }}</span>
+            </div>
+            <div>
+              <h3><a href="{{ q.get_absolute_url }}">{{ q.titre }}</a></h3>
+              {% if q.contenu %}<p>{{ q.contenu|truncatechars:170 }}</p>{% endif %}
+              <div class="q-meta">
+                {% if q.epinglee %}<span class="badge badge-copper">★ Question fréquente</span>{% endif %}
+                {% if q.resolue %}<span class="badge badge-ok">✓ Résolue</span>{% endif %}
+                {% if q.a_reponse_equipe %}<span class="badge badge-equipe">Réponse de l'équipe</span>{% endif %}
+                {% if q.theme %}<span>{{ q.theme.nom }}</span>{% endif %}
+                {% if q.nb_soutiens %}<span>✋ {{ q.nb_soutiens }}</span>{% endif %}
+                <span>{{ q.auteur.nom_affiche|default:"Anonyme" }} · il y a {{ q.cree_le|timesince }}</span>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+      {% include "includes/pagination.html" %}
+    {% else %}
+      <div class="empty">
+        <div class="ico">💬</div>
+        <h3>Aucune question trouvée</h3>
+        <p>{% if q %}Personne n'a encore posé cette question.{% else %}Aucune question dans cette catégorie pour le moment.{% endif %}</p>
+        <a class="btn btn-accent" href="{% url 'faq:poser' %}{% if q %}?titre={{ q|urlencode }}{% endif %}">Poser cette question</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{% if matiere_active %}{{ matiere_active.nom }}{% else %}Ressources{% endif %}{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <div class="container page-head-row">
+    <div>
+      <span class="eyebrow">Bibliothèque</span>
+      <h1>{% if matiere_active %}{{ matiere_active.icone }} {{ matiere_active.nom }}{% else %}Toutes les ressources{% endif %}</h1>
+      <p>{% if matiere_active.description %}{{ matiere_active.description }}{% else %}{{ total }} ressource{{ total|pluralize }} disponible{{ total|pluralize }}{% if not user.is_authenticated %} — connectez-vous pour accéder aux contenus réservés{% endif %}.{% endif %}</p>
+    </div>
+    {% if user.est_equipe %}<a class="btn btn-accent" href="{% url 'ressources:creer' %}">+ Ajouter une ressource</a>{% endif %}
+  </div>
+</header>
+
+<div class="container layout-sidebar">
+  <aside class="sidebar">
+    <div>
+      <h4>Matières</h4>
+      <ul class="filter-list">
+        <li><a href="{% querystring matiere=None page=None %}" class="{% if not matiere_active %}active{% endif %}"><span>Toutes</span><span class="count">{{ total }}</span></a></li>
+        {% for m in matieres %}
+          <li><a href="{% querystring matiere=m.slug page=None %}" class="{% if matiere_active == m %}active{% endif %}"><span><span class="swatch" style="background:{{ m.couleur }}"></span>{{ m.nom }}</span><span class="count">{{ m.nb }}</span></a></li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div>
+      <h4>Type</h4>
+      <div class="chips">
+        <a class="chip{% if not type_actif %} active{% endif %}" href="{% querystring type=None page=None %}">Tous</a>
+        {% for val, label in types %}
+          <a class="chip{% if type_actif == val %} active{% endif %}" href="{% querystring type=val page=None %}">{{ label }}</a>
+        {% endfor %}
+      </div>
+    </div>
+  </aside>
+
+  <div>
+    <div class="toolbar">
+      <form class="search-box" method="get" role="search">
+        {% include "includes/icon_search.html" %}
+        {% if matiere_active %}<input type="hidden" name="matiere" value="{{ matiere_active.slug }}">{% endif %}
+        {% if type_actif %}<input type="hidden" name="type" value="{{ type_actif }}">{% endif %}
+        <label class="visually-hidden" for="q">Rechercher</label>
+        <input id="q" type="search" name="q" value="{{ q }}" placeholder="Rechercher dans les ressources…">
+        <button class="btn btn-sm" type="submit">OK</button>
+      </form>
+      <form method="get">
+        {% if matiere_active %}<input type="hidden" name="matiere" value="{{ matiere_active.slug }}">{% endif %}
+        {% if type_actif %}<input type="hidden" name="type" value="{{ type_actif }}">{% endif %}
+        {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+        <label class="visually-hidden" for="tri">Trier</label>
+        <select id="tri" name="tri" data-autosubmit>
+          <option value="recentes" {% if tri == "recentes" %}selected{% endif %}>Plus récentes</option>
+          <option value="populaires" {% if tri == "populaires" %}selected{% endif %}>Plus consultées</option>
+          <option value="alpha" {% if tri == "alpha" %}selected{% endif %}>Ordre alphabétique</option>
+        </select>
+      </form>
+    </div>
+
+    {% if q %}<p class="muted">{{ page.paginator.count }} résultat{{ page.paginator.count|pluralize }} pour « {{ q }} » — <a href="{% querystring q=None page=None %}">effacer</a></p>{% endif %}
+
+    {% if page.object_list %}
+      <div class="grid grid-3">
+        {% for r in page.object_list %}{% include "includes/ressource_card.html" %}{% endfor %}
+      </div>
+      {% include "includes/pagination.html" %}
+    {% else %}
+      <div class="empty">
+        <div class="ico">🔍</div>
+        <h3>Aucune ressource ici… pour l'instant</h3>
+        <p>Essayez une autre matière ou un autre mot-clé. Vous ne trouvez pas ce que vous cherchez ? Demandez-le dans la FAQ.</p>
+        <a class="btn btn-ghost" href="{% url 'faq:poser' %}">Poser une question</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Accès réservé{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="empty" style="max-width:560px">
+    <div class="ico">🔒</div>
+    <h1 style="font-size:1.8rem">Ressource réservée</h1>
+    {% if r.visibilite == "admissibles" %}
+      <p>« {{ r.titre }} » est réservée aux <strong>candidat·es admissibles</strong>. Si vous êtes admissible, demandez à l'équipe de mettre à jour votre compte : votre accès sera ouvert dès la vérification faite.</p>
+    {% else %}
+      <p>« {{ r.titre }} » est un document interne réservé aux <strong>membres de la promo IPEF</strong>.</p>
+    {% endif %}
+    <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap">
+      <a class="btn btn-ghost" href="{% url 'ressources:liste' %}">Voir les autres ressources</a>
+      {% if r.visibilite == "admissibles" %}<a class="btn btn-accent" href="{% url 'faq:poser' %}?titre={{ 'Demande d’accès admissible'|urlencode }}">Contacter l'équipe</a>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

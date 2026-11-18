@@ -1,0 +1,15 @@
+<article class="r-card reveal" style="--c: {{ r.matiere.couleur }}">
+  <div class="r-card-top">
+    <span class="r-matiere">{{ r.matiere.icone }} {{ r.matiere.nom }}</span>
+    <span class="pill pill-{{ r.type }}">{{ r.get_type_display }}</span>
+  </div>
+  <h3><a href="{{ r.get_absolute_url }}">{{ r.titre }}</a></h3>
+  <p>{{ r.resume|truncatechars:150 }}</p>
+  <div class="r-card-meta">
+    <span>{% if r.fichier %}📄 {{ r.extension|upper }}{% elif r.lien %}🔗 Lien{% else %}📝 En ligne{% endif %}</span>
+    {% if r.annee %}<span>{{ r.annee }}</span>{% endif %}
+    {% if r.visibilite != "public" %}<span class="vis vis-{{ r.visibilite }}">🔒 {{ r.get_visibilite_display }}</span>{% endif %}
+    {% if r.nb_telechargements %}<span>↓ {{ r.nb_telechargements }}</span>{% endif %}
+    <span>{{ r.publie_le|default:r.cree_le|date:"j M Y" }}</span>
+  </div>
+</article>

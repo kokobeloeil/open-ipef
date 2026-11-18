@@ -1,0 +1,29 @@
+# Secrets et configuration locale — NE JAMAIS PUBLIER
+.env
+*.env
+!.env.example
+
+# Environnement virtuel
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Base de données locale et fichiers déposés
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# Fichiers statiques collectés
+staticfiles/
+
+# Éditeurs et systèmes
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db

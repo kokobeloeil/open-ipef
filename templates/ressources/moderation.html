@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Modération{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <div class="container">
+    <span class="eyebrow">Modération</span>
+    <h1>Ressources à valider</h1>
+    <p>{{ ressources|length }} ressource{{ ressources|length|pluralize }} en attente. Ouvrez chaque ressource pour la relire avant de la publier.</p>
+  </div>
+</header>
+
+<section class="section-tight">
+  <div class="container">
+    {% for r in ressources %}
+      <div class="mod-item" style="--c: {{ r.matiere.couleur }}">
+        <div>
+          <div style="display:flex;gap:.5rem;margin-bottom:.4rem;flex-wrap:wrap">
+            <span class="r-matiere" style="color:{{ r.matiere.couleur }}">{{ r.matiere.icone }} {{ r.matiere.nom }}</span>
+            <span class="pill pill-{{ r.type }}">{{ r.get_type_display }}</span>
+            <span class="pill">{{ r.get_visibilite_display }}</span>
+          </div>
+          <h3><a href="{{ r.get_absolute_url }}">{{ r.titre }}</a></h3>
+          <p class="small muted" style="margin:0">{{ r.resume|truncatechars:160 }}</p>
+          <p class="small muted" style="margin:.4rem 0 0">Par {{ r.auteur.nom_affiche|default:"—" }} · {{ r.cree_le|timesince }}{% if r.fichier %} · 📄 {{ r.nom_fichier }}{% endif %}{% if r.lien %} · 🔗 lien{% endif %}</p>
+        </div>
+        <div class="mod-actions">
+          <div style="display:flex;gap:.5rem">
+            <a class="btn btn-ghost btn-sm" href="{{ r.get_absolute_url }}">Relire</a>
+            <form method="post" action="{% url 'ressources:moderer' r.slug %}">{% csrf_token %}
+              <input type="hidden" name="decision" value="valider">
+              <button class="btn btn-ok btn-sm" type="submit">Publier</button>
+            </form>
+            <button class="btn btn-ghost btn-sm" type="button" data-refus-toggle>Refuser</button>
+          </div>
+          <form class="refus-form inline-form" method="post" action="{% url 'ressources:moderer' r.slug %}" hidden>{% csrf_token %}
+            <input type="hidden" name="decision" value="refuser">
+            <input type="text" name="motif" maxlength="300" placeholder="Motif (visible par l'auteur·rice)">
+            <button class="btn btn-danger btn-sm" type="submit">Confirmer le refus</button>
+          </form>
+        </div>
+      </div>
+    {% empty %}
+      <div class="empty"><div class="ico">✅</div><h3>Tout est à jour</h3><p>Aucune ressource n'attend de validation. Merci pour votre travail de relecture !</p></div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

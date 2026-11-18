@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Supprimer « {{ r.titre }} »{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="form-card auth-card">
+    <h1>Supprimer la ressource ?</h1>
+    <p class="sub">« {{ r.titre }} » sera définitivement supprimée{% if r.fichier %}, ainsi que son fichier{% endif %}. Cette action est irréversible.</p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-actions" style="justify-content:center;border:0">
+        <a class="btn btn-ghost" href="{{ r.get_absolute_url }}">Annuler</a>
+        <button class="btn btn-danger" type="submit">Supprimer définitivement</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

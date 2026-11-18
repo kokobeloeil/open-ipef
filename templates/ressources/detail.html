@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load ipef %}
+{% block title %}{{ r.titre }}{% endblock %}
+{% block description %}{{ r.resume }}{% endblock %}
+
+{% block content %}
+<header class="r-hero" style="--c: {{ r.matiere.couleur }}">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="Fil d'Ariane">
+      <a href="{% url 'ressources:liste' %}">Ressources</a><span>›</span>
+      <a href="{{ r.matiere.get_absolute_url }}">{{ r.matiere.nom }}</a>
+    </nav>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem">
+      <span class="pill pill-{{ r.type }}">{{ r.get_type_display }}</span>
+      {% if r.annee %}<span class="pill">{{ r.annee }}</span>{% endif %}
+      {% if r.visibilite != "public" %}<span class="pill vis-{{ r.visibilite }}">🔒 {{ r.get_visibilite_display }}</span>{% endif %}
+      {% if r.statut != "publiee" %}<span class="badge status-{{ r.statut }}">{{ r.get_statut_display }}</span>{% endif %}
+    </div>
+    <h1>{{ r.titre }}</h1>
+    <p class="lead">{{ r.resume }}</p>
+    <div class="meta-row">
+      {% if r.auteur %}<span class="who"><span class="avatar">{{ r.auteur.initiales }}</span>{{ r.auteur.nom_affiche }}{% if r.auteur.promotion %} · {{ r.auteur.promotion }}{% endif %}</span>{% endif %}
+      <span>Publiée le {{ r.publie_le|default:r.cree_le|date:"j F Y" }}</span>
+      {% if r.modifie_le|date:"Ymd" != r.cree_le|date:"Ymd" %}<span>Mise à jour le {{ r.modifie_le|date:"j F Y" }}</span>{% endif %}
+    </div>
+  </div>
+</header>
+
+<div class="container layout-detail">
+  <article>
+    {% if r.statut == "en_attente" %}
+      <div class="notice notice-warn">⏳ <div>Cette ressource attend la validation d'un·e modérateur·rice. Elle n'est pas encore visible par les candidats.</div></div>
+    {% elif r.statut == "refusee" %}
+      <div class="notice notice-danger">✋ <div><strong>Ressource refusée.</strong>{% if r.motif_refus %} Motif : {{ r.motif_refus }}{% endif %} Vous pouvez la modifier puis la soumettre à nouveau.</div></div>
+    {% elif r.statut == "brouillon" %}
+      <div class="notice notice-muted">✏️ <div>Brouillon : visible uniquement par vous et les modérateurs.</div></div>
+    {% endif %}
+
+    {% if r.fichier %}
+      <div class="file-card">
+        <div class="file-icon">{{ r.extension|upper|truncatechars:5 }}</div>
+        <div class="info">
+          <strong>{{ r.nom_fichier }}</strong>
+          <span>{{ r.taille|taille_lisible }}{% if r.nb_telechargements %} · {{ r.nb_telechargements }} téléchargement{{ r.nb_telechargements|pluralize }}{% endif %}</span>
+        </div>
+        <a class="btn btn-accent" href="{% url 'ressources:telecharger' r.slug %}" download>Télécharger</a>
+      </div>
+      {% if r.est_pdf %}
+        <iframe class="pdf-preview" src="{% url 'ressources:telecharger' r.slug %}?apercu=1#view=FitH" title="Aperçu de {{ r.titre }}" loading="lazy"></iframe>
+      {% endif %}
+    {% endif %}
+
+    {% if r.lien %}
+      <div class="link-card">
+        <span style="font-size:1.6rem">🔗</span>
+        <div class="info"><strong>Ressource externe</strong><span>{{ r.lien }}</span></div>
+        <a class="btn" href="{{ r.lien }}" target="_blank" rel="noopener noreferrer">Ouvrir ↗</a>
+      </div>
+    {% endif %}
+
+    {% if r.contenu %}
+      <div class="prose">{{ r.contenu|markdown }}</div>
+    {% endif %}
+  </article>
+
+  <aside class="aside-sticky">
+    {% if peut_modifier %}
+      <div class="card">
+        <h3>Gérer</h3>
+        <div style="display:grid;gap:.5rem">
+          <a class="btn btn-ghost btn-block" href="{% url 'ressources:modifier' r.slug %}">Modifier</a>
+          {% if user.est_moderateur and r.statut == "en_attente" %}
+            <form method="post" action="{% url 'ressources:moderer' r.slug %}">{% csrf_token %}
+              <input type="hidden" name="decision" value="valider"><input type="hidden" name="next" value="{{ r.get_absolute_url }}">
+              <button class="btn btn-ok btn-block" type="submit">Valider et publier</button>
+            </form>
+          {% endif %}
+          <a class="btn-link small" style="text-align:center;color:var(--danger)" href="{% url 'ressources:supprimer' r.slug %}">Supprimer</a>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="card">
+      <dl class="kv">
+        <dt>Matière</dt><dd>{{ r.matiere.nom }}</dd>
+        <dt>Type</dt><dd>{{ r.get_type_display }}</dd>
+        {% if r.annee %}<dt>Année</dt><dd>{{ r.annee }}</dd>{% endif %}
+        <dt>Accès</dt><dd>{{ r.get_visibilite_display }}</dd>
+        {% if r.valide_par %}<dt>Relue par</dt><dd>{{ r.valide_par.nom_affiche }}</dd>{% endif %}
+      </dl>
+    </div>
+
+    {% if similaires %}
+      <div class="card">
+        <h3>Dans la même matière</h3>
+        <ul class="mini-list">
+          {% for s in similaires %}<li><a href="{{ s.get_absolute_url }}">{{ s.titre }}<small>{{ s.get_type_display }}</small></a></li>{% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <div class="card" style="background:var(--paper-2)">
+      <h3>Une question sur ce contenu ?</h3>
+      <p class="small muted">Posez-la dans la FAQ, la promo vous répondra.</p>
+      <a class="btn btn-sm btn-block" href="{% url 'faq:poser' %}?titre={{ r.titre|urlencode }}%20%3A%20">Poser une question</a>
+    </div>
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Mes ressources{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <div class="container page-head-row">
+    <div>
+      <span class="eyebrow">Espace contributeur</span>
+      <h1>Mes ressources</h1>
+      <p>Suivez l'état de vos dépôts : brouillons, en attente de validation, publiés ou à retravailler.</p>
+    </div>
+    <a class="btn btn-accent" href="{% url 'ressources:creer' %}">+ Nouvelle ressource</a>
+  </div>
+</header>
+
+<section class="section-tight">
+  <div class="container">
+    <nav class="tabs">
+      <a href="{% url 'ressources:mes_ressources' %}" class="{% if not statut_actif %}active{% endif %}">Toutes</a>
+      {% for val, label in statuts %}
+        <a href="?statut={{ val }}" class="{% if statut_actif == val %}active{% endif %}">{{ label }}</a>
+      {% endfor %}
+    </nav>
+
+    {% if ressources %}
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Titre</th><th>Matière</th><th>Statut</th><th>Accès</th><th>Téléch.</th><th>Modifiée</th><th></th></tr></thead>
+          <tbody>
+            {% for r in ressources %}
+              <tr>
+                <td><a href="{{ r.get_absolute_url }}"><strong>{{ r.titre }}</strong></a><br><span class="small muted">{{ r.get_type_display }}</span></td>
+                <td>{{ r.matiere.nom }}</td>
+                <td><span class="badge status-{{ r.statut }}">{{ r.get_statut_display }}</span>{% if r.statut == "refusee" and r.motif_refus %}<br><span class="small muted">{{ r.motif_refus|truncatechars:60 }}</span>{% endif %}</td>
+                <td class="small">{{ r.get_visibilite_display }}</td>
+                <td>{{ r.nb_telechargements }}</td>
+                <td class="small muted">{{ r.modifie_le|date:"j M Y" }}</td>
+                <td><a class="btn btn-ghost btn-sm" href="{% url 'ressources:modifier' r.slug %}">Modifier</a></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty"><div class="ico">🗂️</div><h3>Rien ici pour l'instant</h3><p>Partagez votre premier cours, une fiche ou une annale corrigée.</p><a class="btn btn-accent" href="{% url 'ressources:creer' %}">Ajouter une ressource</a></div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

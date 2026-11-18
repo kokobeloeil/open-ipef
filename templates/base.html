@@ -1,0 +1,123 @@
+{% load static %}<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ SITE_NAME }}{% endblock %} · {{ SITE_NAME }}</title>
+  <meta name="description" content="{% block description %}Cours, fiches, annales et conseils pour préparer le concours d'ingénieur des ponts, des eaux et des forêts, partagés par la promotion qui vient de le réussir.{% endblock %}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2317352a'/><path d='M16 6l7 11h-4l5 8H8l5-8H9z' fill='%23f7f4ec'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,50;1,9..144,400..600,50&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <a class="visually-hidden" href="#contenu">Aller au contenu</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="{% url 'core:home' %}">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l6 9h-3.5l4.5 7H5l4.5-7H6z"/><path d="M12 19v2"/></svg>
+        </span>
+        <span>Prépa <em>IPEF</em></span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-label="Ouvrir le menu" aria-expanded="false" data-nav-toggle>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+
+      {% with nom_url=request.resolver_match.namespace %}
+      <nav class="main-nav" data-nav aria-label="Navigation principale">
+        <a href="{% url 'ressources:liste' %}" {% if nom_url == 'ressources' %}class="active"{% endif %}>Ressources</a>
+        <a href="{% url 'faq:liste' %}" {% if nom_url == 'faq' %}class="active"{% endif %}>Questions</a>
+        <a href="{% url 'core:apropos' %}" {% if request.resolver_match.url_name == 'apropos' %}class="active"{% endif %}>À propos</a>
+        <span class="nav-sep"></span>
+        {% if user.is_authenticated %}
+          {% if user.est_equipe %}
+            <a class="btn btn-sm btn-accent" href="{% url 'ressources:creer' %}">+ Ajouter une ressource</a>
+          {% else %}
+            <a class="btn btn-sm btn-accent" href="{% url 'faq:poser' %}">Poser une question</a>
+          {% endif %}
+          <details class="user-menu">
+            <summary aria-label="Menu du compte">
+              <span class="avatar">{{ user.initiales }}</span>
+              {% if nb_en_attente %}<span class="dot">{{ nb_en_attente }}</span>{% endif %}
+              <span class="chev">▾</span>
+            </summary>
+            <div class="dropdown">
+              <div class="dropdown-head">
+                <strong>{{ user.nom_affiche }}</strong>
+                <span class="badge {{ user.classe_badge }}">{{ user.get_role_display }}</span>
+              </div>
+              <a href="{% url 'accounts:profil' %}">Mon profil</a>
+              {% if user.est_equipe %}<a href="{% url 'ressources:mes_ressources' %}">Mes ressources</a>{% endif %}
+              {% if user.est_moderateur %}
+                <a href="{% url 'ressources:moderation' %}">Modération {% if nb_en_attente %}<span class="badge badge-copper">{{ nb_en_attente }}</span>{% endif %}</a>
+              {% endif %}
+              {% if user.est_admin %}<a href="{% url 'accounts:equipe' %}">Membres & rôles</a>{% endif %}
+              {% if user.is_staff %}<a href="{% url 'admin:index' %}">Administration Django</a>{% endif %}
+              <hr>
+              <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button type="submit">Se déconnecter</button></form>
+            </div>
+          </details>
+        {% else %}
+          <a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">Connexion</a>
+          <a class="btn btn-sm" href="{% url 'accounts:inscription' %}">Créer un compte</a>
+        {% endif %}
+      </nav>
+      {% endwith %}
+    </div>
+  </header>
+
+  <main id="contenu">
+    {% if messages %}
+      <div class="container messages" role="status">
+        {% for message in messages %}
+          <div class="message {{ message.tags }}"><span>{{ message }}</span><button type="button" aria-label="Fermer">×</button></div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a class="brand" href="{% url 'core:home' %}"><span class="brand-mark" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l6 9h-3.5l4.5 7H5l4.5-7H6z"/><path d="M12 19v2"/></svg></span><span>Prépa <em>IPEF</em></span></a>
+          <p>Un projet bénévole porté par une promotion d'élèves ingénieurs des ponts, des eaux et des forêts, pour aider les candidats qui nous suivent.</p>
+        </div>
+        <div>
+          <h4>Explorer</h4>
+          <ul>
+            <li><a href="{% url 'ressources:liste' %}">Toutes les ressources</a></li>
+            <li><a href="{% url 'faq:liste' %}?filtre=frequentes">Questions fréquentes</a></li>
+            <li><a href="{% url 'faq:poser' %}">Poser une question</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Le projet</h4>
+          <ul>
+            <li><a href="{% url 'core:apropos' %}">Qui sommes-nous ?</a></li>
+            <li><a href="{% url 'core:apropos' %}#contribuer">Contribuer</a></li>
+            {% if not user.is_authenticated %}<li><a href="{% url 'accounts:inscription' %}">Créer un compte</a></li>{% endif %}
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© {% now "Y" %} {{ SITE_NAME }} — site indépendant, non officiel.</span>
+        <span>Fait avec soin par la promo.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$',right:'$',display:false}],ignoredClasses:['no-math'],throwOnError:false});"></script>
+  <script defer src="{% static 'js/app.js' %}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

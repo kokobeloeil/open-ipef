@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}À propos{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <div class="container">
+    <span class="eyebrow">Le projet</span>
+    <h1>Qui sommes-nous ?</h1>
+    <p>Nous sommes une promotion d'élèves ingénieurs des ponts, des eaux et des forêts. Nous avons créé ce site pour transmettre aux candidats ce qui nous a été utile pendant notre préparation.</p>
+  </div>
+</header>
+
+<section class="section">
+  <div class="container split">
+    <div class="prose">
+      <h2 style="margin-top:0">Pourquoi ce site ?</h2>
+      <p>Préparer un concours, c'est souvent chercher la bonne information dans le désordre : programmes, annales éparpillées, conseils contradictoires. Nous voulions un endroit unique, clair et bienveillant, où retrouver des ressources sélectionnées et poser ses questions à des personnes qui sont passées par là.</p>
+      <p>Toutes les ressources sont relues par l'équipe avant publication. Le site est indépendant et <strong>n'est pas un site officiel</strong> : pour les informations réglementaires (dates, conditions d'inscription, programmes), référez-vous toujours aux sources officielles du concours.</p>
+      <h2 id="contribuer">Contribuer</h2>
+      <p>Les membres de la promotion peuvent créer un compte avec le <em>code promotion</em> (demandez-le à l'équipe) pour devenir contributeurs. Chaque dépôt passe par une étape de validation pour garder un contenu fiable et homogène.</p>
+      <p>Les contenus rédigés acceptent le Markdown et les formules LaTeX : <code>$e^{i\pi} + 1 = 0$</code> s'affiche $e^{i\pi} + 1 = 0$.</p>
+    </div>
+    <div class="card">
+      <h3>Les rôles sur le site</h3>
+      <div class="role-grid" style="grid-template-columns:1fr">
+        <div class="role-card"><div class="lvl">0</div><h3>Candidat·e</h3><p>Consulte les ressources publiques et celles réservées aux utilisateurs connectés, pose des questions, répond et soutient les questions des autres.</p></div>
+        <div class="role-card"><div class="lvl">1</div><h3>Admissible</h3><p>Candidat·e admissible au concours : accède en plus aux ressources réservées aux admissibles (préparation des oraux, retours d'entretien…). Statut attribué par l'équipe.</p></div>
+        <div class="role-card"><div class="lvl">2</div><h3>Contributeur·rice</h3><p>Membre de la promo IPEF : dépose des cours, fiches et annales (soumis à validation), accède aux documents internes et répond avec le badge Équipe.</p></div>
+        <div class="role-card"><div class="lvl">3</div><h3>Modérateur·rice</h3><p>Valide ou refuse les ressources, publie directement, épingle les questions fréquentes et masque les contenus inappropriés.</p></div>
+        <div class="role-card"><div class="lvl">4</div><h3>Administrateur·rice</h3><p>Attribue les rôles aux membres (dont le statut d'admissible) et gère les matières et thèmes.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

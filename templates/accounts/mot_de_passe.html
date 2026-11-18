@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Changer de mot de passe{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="form-card auth-card">
+    <h1>Nouveau mot de passe</h1>
+    <p class="sub">Choisissez un mot de passe solide.</p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "includes/form_errors.html" %}
+      {% for field in form %}{% include "includes/field.html" %}{% endfor %}
+      <button class="btn btn-accent btn-block" type="submit">Mettre à jour</button>
+    </form>
+    <p class="auth-alt"><a href="{% url 'accounts:profil' %}">← Retour au profil</a></p>
+  </div>
+</div>
+{% endblock %}

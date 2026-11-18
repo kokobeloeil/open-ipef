@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Poser une question{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <div class="container-narrow">
+    <span class="eyebrow">Foire aux questions</span>
+    <h1>Poser une question</h1>
+    <p>Votre question sera publique pour que d'autres candidats en profitent. Restez précis et évitez les informations personnelles.</p>
+  </div>
+</header>
+<section class="section-tight">
+  <div class="container-narrow">
+    <form class="form-card" method="post" novalidate>
+      {% csrf_token %}
+      {% include "includes/form_errors.html" %}
+      {% for field in form %}{% include "includes/field.html" %}{% endfor %}
+      <div class="form-actions">
+        <a class="btn btn-ghost" href="{% url 'faq:liste' %}">Annuler</a>
+        <button class="btn btn-accent" type="submit">Publier la question</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Membres et rôles{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <div class="container">
+    <span class="eyebrow">Administration</span>
+    <h1>Membres et rôles</h1>
+    <p>Attribuez les rôles : les contributeurs déposent des ressources, les modérateurs les valident, les administrateurs gèrent les membres.</p>
+  </div>
+</header>
+
+<section class="section-tight">
+  <div class="container">
+    <div class="toolbar">
+      <form class="search-box" method="get" role="search">
+        {% include "includes/icon_search.html" %}
+        {% if role_actif %}<input type="hidden" name="role" value="{{ role_actif }}">{% endif %}
+        <input type="search" name="q" value="{{ q }}" placeholder="Nom, identifiant, e-mail…" aria-label="Rechercher un membre">
+        <button class="btn btn-sm" type="submit">OK</button>
+      </form>
+      <div class="chips">
+        <a class="chip{% if not role_actif %} active{% endif %}" href="{% querystring role=None page=None %}">Tous</a>
+        {% for val, label, n in roles_compte %}
+          <a class="chip{% if role_actif == val %} active{% endif %}" href="{% querystring role=val page=None %}">{{ label }} <span class="muted">{{ n }}</span></a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Membre</th><th>E-mail</th><th>Promotion</th><th>Ressources</th><th>Inscription</th><th>Rôle</th></tr></thead>
+        <tbody>
+          {% for m in page.object_list %}
+            <tr>
+              <td><div class="user-cell"><span class="avatar">{{ m.initiales }}</span><div><strong>{{ m.nom_affiche }}</strong><br><span class="small muted">@{{ m.username }}</span></div></div></td>
+              <td class="small">{{ m.email }}</td>
+              <td class="small">{{ m.promotion|default:"—" }}</td>
+              <td>{{ m.nb_ressources }}</td>
+              <td class="small muted">{{ m.date_joined|date:"j M Y" }}</td>
+              <td>
+                {% if m == user %}
+                  <span class="badge badge-equipe">{{ m.get_role_display }} (vous)</span>
+                {% else %}
+                  <form method="post" action="{% url 'accounts:changer_role' m.pk %}" class="inline-form">{% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <select name="role" data-autosubmit aria-label="Rôle de {{ m.nom_affiche }}">
+                      {% for val, label in roles %}<option value="{{ val }}" {% if m.role == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                    </select>
+                    <noscript><button class="btn btn-sm" type="submit">OK</button></noscript>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="6" class="muted" style="text-align:center;padding:2rem">Aucun membre trouvé.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include "includes/pagination.html" %}
+  </div>
+</section>
+{% endblock %}

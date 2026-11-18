@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{% if creation %}Nouvelle ressource{% else %}Modifier « {{ r.titre }} »{% endif %}{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <div class="container-narrow">
+    <span class="eyebrow">{% if creation %}Contribuer{% else %}Édition{% endif %}</span>
+    <h1>{% if creation %}Partager une ressource{% else %}Modifier la ressource{% endif %}</h1>
+    <p>{% if user.est_moderateur %}En tant que modérateur·rice, votre ressource sera publiée immédiatement.{% else %}Votre ressource sera relue par un·e modérateur·rice avant d'être publiée.{% endif %}</p>
+  </div>
+</header>
+
+<section class="section-tight">
+  <div class="container-narrow">
+    <form class="form-card" method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {% include "includes/form_errors.html" %}
+      <div class="form-grid">
+        {% with field=form.titre full=True %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.matiere %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.type %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.resume full=True %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.fichier full=True %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.lien %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.annee %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.visibilite full=True %}{% include "includes/field.html" %}{% endwith %}
+        {% with field=form.contenu full=True %}{% include "includes/field.html" %}{% endwith %}
+      </div>
+      <div class="notice notice-info small">💡 <div>Le contenu rédigé accepte le <strong>Markdown</strong> (titres <code>##</code>, listes, tableaux, <code>**gras**</code>) et les formules <strong>LaTeX</strong> : <code>$\int_0^1 f(x)\,dx$</code> ou <code>$$\sum_{n\geq 0} a_n x^n$$</code>.</div></div>
+      <div class="form-actions">
+        <a class="btn btn-ghost" href="{% if r %}{{ r.get_absolute_url }}{% else %}{% url 'ressources:liste' %}{% endif %}">Annuler</a>
+        {% if creation or r.statut != "publiee" %}
+          <button class="btn btn-ghost" type="submit" name="action" value="brouillon">Enregistrer en brouillon</button>
+        {% endif %}
+        <button class="btn btn-accent" type="submit" name="action" value="soumettre">
+          {% if r.statut == "publiee" %}Enregistrer{% elif user.est_moderateur %}Publier{% else %}Envoyer pour validation{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
