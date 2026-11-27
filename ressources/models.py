@@ -60,11 +60,12 @@ class RessourceQuerySet(models.QuerySet):
 
 class Ressource(models.Model):
     class Type(models.TextChoices):
-        COURS = "cours", "Cours"
-        FICHE = "fiche", "Fiche de synthèse"
-        EXERCICES = "exercices", "Exercices"
         ANNALE = "annale", "Annale"
-        CORRIGE = "corrige", "Corrigé"
+        RAPPORT_DU_JURY = "rapport_du_jury", "Rapport du jury"
+        FICHE = "fiche", "Fiche de synthèse"
+        ARTICLE_SCIENTIFIQUE = "article_scientifique", "Article scientifique"
+        RAPPORT_DE_REFERENCE = "rapport_de_reference", "Rapport de référence"
+        COURS = "cours", "Cours"
         METHODO = "methodo", "Méthodologie"
         ORAL = "oral", "Préparation à l'oral"
         LIEN = "lien", "Lien utile"
